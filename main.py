@@ -84,11 +84,10 @@ class Window(QWidget):
     def update_all(self):
         self.setWindowOpacity(self.transparency)
         
-        self.stacked_month_layout= QStackedLayout()
+        self.stacked_month_layout= QStackedLayout(self)
         for i in range(12):
-            print(f"Creating layout for month {i+1}")
             self.stacked_month_layout.addWidget(self.create_single_month(i))
-
+        #self.stacked_month_layout.addWidget(self.create_single_month(0))
         stacked_year_widget = QWidget()
         stacked_year_widget.setLayout(self.stacked_month_layout)
         self.stacked_month_layout.setCurrentIndex(self.monthIndex)
