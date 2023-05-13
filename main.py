@@ -33,9 +33,21 @@ class Window(QWidget):
     
     def setMonth(self, val):
         self.monthIndex = max(0, min(val, 11))
+        new_year = False
+        if val == 12:
+            self.year += 1
+            new_year = True
+            self.monthIndex = 0
+        if val == -1:
+            self.year -= 1
+            new_year = True
+            self.monthIndex = 11
+        if new_year:
+            self.update_stacked_month()
+        
         self.stacked_month_layout.setCurrentIndex(self.monthIndex)
         self.year_label.setText(f"<h1>{self.year},{self.monthIndex + 1}</h1>")
-        print(f"Month: {self.monthIndex + 1}")
+        #print(f"Month: {self.monthIndex + 1}")
 
     def topbar_widget(self):
         widget = QWidget()
@@ -80,13 +92,31 @@ class Window(QWidget):
 
         slider.valueChanged.connect(slider_value_changed)
         return slider
+    
+    def fill_stacked_month(self):
+        for i in range(12):
+            self.stacked_month_layout.addWidget(self.create_single_month(i))
+    def clear_stacked_month(self):
+        print(f"count = {self.stacked_month_layout.count()}")
+        for i in reversed(range(self.stacked_month_layout.count())):    
+            w = self.stacked_month_layout.widget(i)
+            print(f"Widget to remove: {w}")
+            self.stacked_month_layout.removeWidget(w)
+            #w.deleteLater()
+
+        print(f"After delete count = {self.stacked_month_layout.count()}")
+
+    def update_stacked_month(self):
+        self.clear_stacked_month()
+        self.fill_stacked_month()
 
     def update_all(self):
         self.setWindowOpacity(self.transparency)
         
         self.stacked_month_layout= QStackedLayout(self)
-        for i in range(12):
-            self.stacked_month_layout.addWidget(self.create_single_month(i))
+        
+        self.fill_stacked_month()
+        
         #self.stacked_month_layout.addWidget(self.create_single_month(0))
         stacked_year_widget = QWidget()
         stacked_year_widget.setLayout(self.stacked_month_layout)
