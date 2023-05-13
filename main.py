@@ -1,5 +1,8 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QGridLayout, QVBoxLayout,QHBoxLayout, QSlider, QPushButton, QStackedLayout
+from PyQt6.QtWidgets import QApplication, \
+    QLabel, QWidget, \
+    QGridLayout, QVBoxLayout, QHBoxLayout, QStackedLayout, \
+    QSlider, QPushButton, QComboBox
 from PyQt6.QtGui import QPalette, QColor
 from PyQt6.QtCore import Qt
 import calendar
@@ -48,6 +51,12 @@ class Window(QWidget):
         self.stacked_month_layout.setCurrentIndex(self.monthIndex)
         self.year_label.setText(f"<h1>{self.year},{self.monthIndex + 1}</h1>")
         #print(f"Month: {self.monthIndex + 1}")
+    
+    def setYear(self,val):
+        self.year = int(val)
+        self.update_stacked_month()
+        self.stacked_month_layout.setCurrentIndex(self.monthIndex)
+        self.year_label.setText(f"<h1>{self.year},{self.monthIndex + 1}</h1>")
 
     def topbar_widget(self):
         widget = QWidget()
@@ -68,6 +77,29 @@ class Window(QWidget):
         l.addWidget(button_prev)
         l.addWidget(self.year_label)
         l.addWidget(button_next)
+
+        combo_box_year = QComboBox(widget)
+        for i in range(1990,2040):
+            combo_box_year.addItem(str(i))
+
+        def handle_combo_box_year_change():
+            selected_year = combo_box_year.currentText()
+            self.setYear(selected_year)
+        
+        combo_box_year.currentIndexChanged.connect(handle_combo_box_year_change)
+
+        combo_box_month = QComboBox(widget)
+        for i in range(1,12):
+            combo_box_month.addItem(str(i))
+        
+        def handle_combo_box_month_change():
+            selected_month_index = int(combo_box_month.currentText()) -1
+            self.setMonth(selected_month_index)
+        
+        combo_box_month.currentIndexChanged.connect(handle_combo_box_month_change)
+
+        l.addWidget(combo_box_year)
+        l.addWidget(combo_box_month)
 
         widget.setLayout(l)
         return widget

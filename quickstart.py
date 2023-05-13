@@ -9,6 +9,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from event import CalEvent
+
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
@@ -73,18 +75,9 @@ def main():
     print(t2)
     events = apimanager.get_events(10,t1)
     for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        end = event['end'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
-
-        #'%m/%d/%y %H:%M:%S'
-        try:
-            dt = datetime.datetime.strptime(start, "%Y-%m-%dT%H:%M:%S%z")
-            print(f"date = {dt.strftime('%Y_%m_%d')}")
-        except ValueError:
-            dt = datetime.datetime.strptime(start, "%Y-%m-%d")
-            print(f"date = {dt.strftime('%Y_%m_%d')}")
-        print(f"dt = {dt}")
-
+        #print(event['start']['dateTime'])
+        c_e = CalEvent(event)
+        print(c_e)
+        
 if __name__ == '__main__':
     main()
