@@ -22,8 +22,10 @@ class Window(QWidget):
         # setting  the geometry of window
         self.monthIndex = 4
         self.year = 2023
+
         self.today = 12
         self.thisMonthIndex = 4
+        self.thisyear = 2023
         self.update_all()
     
     def show(self):
@@ -181,7 +183,7 @@ class Window(QWidget):
             date_num = i + 1 
             dateWidget = QWidget()
             dateWidget.setAutoFillBackground(True)
-            if date_num == self.today and month == self.thisMonthIndex:
+            if date_num == self.today and month == self.thisMonthIndex and self.year == self.thisyear:
                 dateWidget.setPalette(date_today_background)
             else:
                 dateWidget.setPalette(date_default_background)
