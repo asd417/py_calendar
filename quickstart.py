@@ -35,18 +35,23 @@ class APIManager:
         return creds
     
     def get_service(self):
-        return build('calendar', 'v3', credentials=self.creds)
-    
+        return build('calendar', 'v3', credentials=self.cred)
         
-    def get_result(self):
-
-        print('Getting the upcoming 10 events')
-        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        events_result = self.service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=10, singleEvents=True,
-                                              orderBy='startTime').execute()
-        return events_result.get('items', [])
-
+    def get_events(self, count, timemin:str= datetime.datetime.utcnow().isoformat() + 'Z', timemax:str=""):
+        try:
+            print('Getting the upcoming events')
+            #datetime.datetime(year,month,day,hour,minute).isoformat() + 'Z' # 'Z' indicates UTC time
+            if timemax != "":
+                events_result = self.service.events().list(calendarId='primary', timeMin=timemin,timeMax=timemax,
+                                                maxResults=count, singleEvents=True,
+                                                orderBy='startTime').execute()
+            else:
+                events_result = self.service.events().list(calendarId='primary', timeMin=timemin,
+                                                    maxResults=count, singleEvents=True,
+                                                    orderBy='startTime').execute()
+            return events_result.get('items', [])
+        except HttpError as error:
+            print('An error occurred: %s' % error)
 
 def main():
     """Shows basic usage of the Google Calendar API.
@@ -57,27 +62,29 @@ def main():
     # created automatically when the authorization flow completes for the first
     # time.
 
-    try:
-        # python api https://googleapis.github.io/google-api-python-client/docs/dyn/calendar_v3.events.html
-        
-        # Call the Calendar API
-        #type(service) = googleapiclient.discovery.Resource
-        
-        
+    # python api https://googleapis.github.io/google-api-python-client/docs/dyn/calendar_v3.events.html
+    
+    # Call the Calendar API
+    #type(service) = googleapiclient.discovery.Resource
+    apimanager = APIManager()
+    t1 = datetime.datetime(2020,1,1,1,30).isoformat() + 'Z'
+    t2 = datetime.datetime(2023,1,1,1,30).isoformat() + 'Z'
+    print(t1)
+    print(t2)
+    events = apimanager.get_events(10,t1)
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        end = event['end'].get('dateTime', event['start'].get('date'))
+        print(start, event['summary'])
 
-        if not events:
-            print('No upcoming events found.')
-            return
-
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            end = event['end'].get('dateTime', event['start'].get('date'))
-            print(start, event['summary'])
-
-    except HttpError as error:
-        print('An error occurred: %s' % error)
-
+        #'%m/%d/%y %H:%M:%S'
+        try:
+            dt = datetime.datetime.strptime(start, "%Y-%m-%dT%H:%M:%S%z")
+            print(f"date = {dt.strftime('%Y_%m_%d')}")
+        except ValueError:
+            dt = datetime.datetime.strptime(start, "%Y-%m-%d")
+            print(f"date = {dt.strftime('%Y_%m_%d')}")
+        print(f"dt = {dt}")
 
 if __name__ == '__main__':
     main()
