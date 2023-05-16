@@ -6,27 +6,27 @@ from PyQt6.QtWidgets import QApplication, \
 from PyQt6.QtGui import QPalette, QColor
 from PyQt6.QtCore import Qt
 import calendar
+import datetime
+from event import CalEvent
 
+from apimanager import APIManager
 # https://realpython.com/python-pyqt-gui-calculator/
 
 class Window(QWidget):
 
     def __init__(self):
         super().__init__()
-
         # set the title
         self.transparency = 0.5
-        
         self.setWindowTitle("Calendar App")
-  
         # setting  the geometry of window
-        self.monthIndex = 4
-        self.year = 2023
-
-        self.today = 12
-        self.thisMonthIndex = 4
-        self.thisyear = 2023
-        self.update_all()
+        self.monthIndex : int = 4
+        self.year : int = 2023
+        self.today : int = 12
+        self.thisMonthIndex : int = 4
+        self.thisyear : int = 2023
+        self.api : APIManager = None
+        #self.update_all()
     
     def show(self):
         super().show()
@@ -69,7 +69,6 @@ class Window(QWidget):
             self.setMonth(self.monthIndex - 1)
         def button_next_pressed():
             self.setMonth(self.monthIndex + 1)
-
         button_prev.clicked.connect(button_prev_pressed)
         button_next.clicked.connect(button_next_pressed)
         
@@ -106,7 +105,6 @@ class Window(QWidget):
         widget.setLayout(l)
         return widget
 
-
     def transparency_slider(self):
         slider = QSlider()
         slider.setOrientation(Qt.Orientation.Horizontal)  # Set the orientation to horizontal
@@ -128,8 +126,12 @@ class Window(QWidget):
         return slider
     
     def fill_stacked_month(self):
+        if type(self.api) == APIManager:
+            self.api.find_event_in_year(self.year)
+            events = self.api.get_event_list()
         for i in range(12):
-            self.stacked_month_layout.addWidget(self.create_single_month(i))
+            self.stacked_month_layout.addWidget(self.create_single_month(i, events))
+
     def clear_stacked_month(self):
         print(f"count = {self.stacked_month_layout.count()}")
         for i in reversed(range(self.stacked_month_layout.count())):    
@@ -137,8 +139,7 @@ class Window(QWidget):
             print(f"Widget to remove: {w}")
             self.stacked_month_layout.removeWidget(w)
             #w.deleteLater()
-
-        print(f"After delete count = {self.stacked_month_layout.count()}")
+        #print(f"After delete count = {self.stacked_month_layout.count()}")
 
     def update_stacked_month(self):
         self.clear_stacked_month()
@@ -146,11 +147,8 @@ class Window(QWidget):
 
     def update_all(self):
         self.setWindowOpacity(self.transparency)
-        
         self.stacked_month_layout= QStackedLayout(self)
-        
         self.fill_stacked_month()
-        
         #self.stacked_month_layout.addWidget(self.create_single_month(0))
         stacked_year_widget = QWidget()
         stacked_year_widget.setLayout(self.stacked_month_layout)
@@ -163,9 +161,10 @@ class Window(QWidget):
         self.setLayout(v_area)
         self.show()
     
-    def create_single_month(self, month) -> QWidget:
+    def create_single_month(self, month, events) -> QWidget:
         """
             0 <= month <= 11
+            events : list of CalEvent
         """
         date_default_background = QPalette()
         date_default_background.setColor(QPalette.ColorRole.Window, QColor(250,250,250))
@@ -179,11 +178,12 @@ class Window(QWidget):
         grid : QGridLayout = QGridLayout()
         
         for i in range(month_tuple[1]):
+            
             date_string = ""
             date_num = i + 1 
             dateWidget = QWidget()
             dateWidget.setAutoFillBackground(True)
-            if date_num == self.today and month == self.thisMonthIndex and self.year == self.thisyear:
+            if (date_num == self.today) and month == self.thisMonthIndex and self.year == self.thisyear:
                 dateWidget.setPalette(date_today_background)
             else:
                 dateWidget.setPalette(date_default_background)
@@ -207,9 +207,24 @@ class Window(QWidget):
             dateLabel = QLabel(f"<h3>{date_string}, {date_num}</h3>")
             datelayout.addWidget(dateLabel)
 
-            taskLabel = QLabel(f"<p>Task</p>")
+            taskLabel = QLabel(f"<p>Events</p>")
             datelayout.addWidget(taskLabel)
-            
+
+            find_event = True
+            while find_event:
+                if len(events) > 0:
+                    event : CalEvent = events[0]
+                    m, d = event.get_month_date()
+                    if int(m)-1 == month and int(d)-1 == i:
+                        print(f"{event} IS TODAY") 
+                        widget = event.getQWidget()
+                        datelayout.addWidget(widget)
+                        events.pop(0)
+                    else:
+                        find_event = False
+                else:
+                    find_event = False
+
             dateWidget.setLayout(datelayout)
             dateWidget.setMinimumWidth(100)
             dateWidget.setMinimumHeight(100)
@@ -221,7 +236,9 @@ class Window(QWidget):
 def main():
     app = QApplication([])
     window = Window()
-
+    apimanager = APIManager()
+    window.api = apimanager
+    window.update_all()
     sys.exit(app.exec())
 
 if __name__ == '__main__':

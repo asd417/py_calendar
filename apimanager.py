@@ -9,6 +9,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+
+from event import CalEvent
+    
+
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
@@ -17,6 +21,7 @@ class APIManager:
         self.cred = self.get_cred()
         self.service = self.get_service()
         print(f"service type: {type(self.service)}")
+        self.events = []
 
     def get_cred(self):
         if os.path.exists('token.json'):
@@ -53,12 +58,25 @@ class APIManager:
         except HttpError as error:
             print('An error occurred: %s' % error)
 
+    def get_event_list(self):
+        return self.events
+
+    def find_event_in_year(self,year):
+        self.events = []
+        t1 = datetime.datetime(year,1,1,1,30).isoformat() + 'Z'
+        t2 = datetime.datetime(year+1,1,1,1,30).isoformat() + 'Z'
+        print(f"Requesting events between {t1} and {t2}")
+        events = self.get_events(10,t1)
+        for event in events:
+            #print(event['start']['dateTime'])
+            c_e = CalEvent(event)
+            print(c_e)
+            self.events.append(c_e)
+
 def main():
     """Shows basic usage of the Google Calendar API.
     Prints the start and name of the next 10 events on the user's calendar.
     """
-    
-    from event import CalEvent
     
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
