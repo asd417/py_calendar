@@ -15,12 +15,17 @@ from event import CalEvent
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+PRINTLOG = False
+
+def dev_log(words):
+    if PRINTLOG:
+        print(words)
 
 class APIManager:
     def __init__(self):
         self.cred = self.get_cred()
         self.service = self.get_service()
-        print(f"service type: {type(self.service)}")
+        dev_log(f"service type: {type(self.service)}")
         self.events = []
 
     def get_cred(self):
@@ -44,7 +49,7 @@ class APIManager:
         
     def get_events(self, count, timemin:str= datetime.datetime.utcnow().isoformat() + 'Z', timemax:str=""):
         try:
-            print('Getting the upcoming events')
+            dev_log('Getting the upcoming events')
             #datetime.datetime(year,month,day,hour,minute).isoformat() + 'Z' # 'Z' indicates UTC time
             if timemax != "":
                 events_result = self.service.events().list(calendarId='primary', timeMin=timemin,timeMax=timemax,
@@ -56,7 +61,7 @@ class APIManager:
                                                     orderBy='startTime').execute()
             return events_result.get('items', [])
         except HttpError as error:
-            print('An error occurred: %s' % error)
+            dev_log('An error occurred: %s' % error)
 
     def get_event_list(self):
         return self.events
@@ -65,12 +70,12 @@ class APIManager:
         self.events = []
         t1 = datetime.datetime(year,1,1,1,30).isoformat() + 'Z'
         t2 = datetime.datetime(year+1,1,1,1,30).isoformat() + 'Z'
-        print(f"Requesting events between {t1} and {t2}")
+        dev_log(f"Requesting events between {t1} and {t2}")
         events = self.get_events(10,t1)
         for event in events:
             #print(event['start']['dateTime'])
             c_e = CalEvent(event)
-            print(c_e)
+            dev_log(c_e)
             self.events.append(c_e)
 
 def main():
@@ -89,13 +94,11 @@ def main():
     apimanager = APIManager()
     t1 = datetime.datetime(2020,1,1,1,30).isoformat() + 'Z'
     t2 = datetime.datetime(2023,1,1,1,30).isoformat() + 'Z'
-    print(t1)
-    print(t2)
     events = apimanager.get_events(10,t1)
     for event in events:
         #print(event['start']['dateTime'])
         c_e = CalEvent(event)
-        print(c_e)
+        dev_log(c_e)
         
 if __name__ == '__main__':
     main()

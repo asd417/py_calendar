@@ -6,6 +6,12 @@ from PyQt6.QtWidgets import QApplication, \
 from PyQt6.QtGui import QPalette, QColor
 from PyQt6.QtCore import Qt
 
+PRINTLOG = False
+
+def dev_log(words):
+    if PRINTLOG:
+        print(words)
+
 class CalEvent:
     def __init__(self,event_dict : dict):
 

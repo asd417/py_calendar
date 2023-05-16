@@ -12,6 +12,12 @@ from event import CalEvent
 from apimanager import APIManager
 # https://realpython.com/python-pyqt-gui-calculator/
 
+PRINTLOG = False
+
+def dev_log(words):
+    if PRINTLOG:
+        print(words)
+
 class Window(QWidget):
 
     def __init__(self):
@@ -27,10 +33,11 @@ class Window(QWidget):
         self.thisyear : int = 2023
         self.api : APIManager = None
         #self.update_all()
+
     
     def show(self):
         super().show()
-        print("Show called")
+        dev_log("Show called")
 
     def setTransparency(self, val):
         self.transparency = (float(val) / 10)
@@ -119,7 +126,7 @@ class Window(QWidget):
         # Set the slider value
         slider.setValue(5)
         def slider_value_changed(value):
-            print(f"Slider value: {value}")
+            dev_log(f"Slider value: {value}")
             self.setTransparency(value)
 
         slider.valueChanged.connect(slider_value_changed)
@@ -133,10 +140,10 @@ class Window(QWidget):
             self.stacked_month_layout.addWidget(self.create_single_month(i, events))
 
     def clear_stacked_month(self):
-        print(f"count = {self.stacked_month_layout.count()}")
+        dev_log(f"count = {self.stacked_month_layout.count()}")
         for i in reversed(range(self.stacked_month_layout.count())):    
             w = self.stacked_month_layout.widget(i)
-            print(f"Widget to remove: {w}")
+            dev_log(f"Widget to remove: {w}")
             self.stacked_month_layout.removeWidget(w)
             #w.deleteLater()
         #print(f"After delete count = {self.stacked_month_layout.count()}")
@@ -172,7 +179,7 @@ class Window(QWidget):
         date_today_background : QPalette = QPalette()
         date_today_background.setColor(QPalette.ColorRole.Window, QColor(200,200,200))
         month_tuple : tuple = calendar.monthrange(self.year, month+1)
-        print(f"{month+1} has {month_tuple}")
+        dev_log(f"{month+1} has {month_tuple}")
         offset = (month_tuple[0] + 1) % 7
         cal_widget : QWidget = QWidget()
         grid : QGridLayout = QGridLayout()
@@ -216,7 +223,7 @@ class Window(QWidget):
                     event : CalEvent = events[0]
                     m, d = event.get_month_date()
                     if int(m)-1 == month and int(d)-1 == i:
-                        print(f"{event} IS TODAY") 
+                        dev_log(f"{event} IS TODAY") 
                         widget = event.getQWidget()
                         datelayout.addWidget(widget)
                         events.pop(0)
