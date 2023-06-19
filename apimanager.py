@@ -7,7 +7,8 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+from googleapiclient.discovery_cache import DISCOVERY_DOC_DIR
+from googleapiclient.errors import HttpError, UnknownApiNameOrVersion
 
 
 from event import CalEvent
@@ -29,8 +30,12 @@ class APIManager:
         self.events = []
 
     def get_cred(self):
-        if os.path.exists('token.json'):
-            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        creds = None
+        try:
+            if os.path.exists('token.json'):
+                creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        except:
+            print("Error opening saved credentials")
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
@@ -45,7 +50,10 @@ class APIManager:
         return creds
     
     def get_service(self):
-        return build('calendar', 'v3', credentials=self.cred)
+        try:
+            return build('calendar', 'v3', credentials=self.cred)
+        except UnknownApiNameOrVersion: 
+            raise Exception(DISCOVERY_DOC_DIR)
         
     def get_events(self, count, timemin:str= datetime.datetime.utcnow().isoformat() + 'Z', timemax:str=""):
         try:

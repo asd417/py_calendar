@@ -6,3 +6,12 @@ pip install -r requirements.txt
 
 Update requirements.txt with
 pip freeze > requirements.txt
+
+When using pyinstaller or auto_py_to_exe to create executable,
+use --add-data to import ``/venv/Lib/site-packages/googleapiclient/discovery_cache/documents``
+as 
+googleapiclient/discovery_cache/documents/
+to properly include critical google api files 
+
+Also use --onedir
+

@@ -1,3 +1,4 @@
+import os
 import sys
 from PyQt6.QtWidgets import QApplication, \
     QLabel, QWidget, \
@@ -8,6 +9,7 @@ from PyQt6.QtCore import Qt
 import calendar
 import datetime
 from event import CalEvent
+from multiprocessing import freeze_support
 
 from apimanager import APIManager
 # https://realpython.com/python-pyqt-gui-calculator/
@@ -241,8 +243,10 @@ class Window(QWidget):
 
 
 def main():
+
     app = QApplication([])
     window = Window()
+    freeze_support()
     apimanager = APIManager()
     window.api = apimanager
     window.update_all()
