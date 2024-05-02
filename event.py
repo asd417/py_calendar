@@ -28,8 +28,8 @@ class CalEvent:
         except ValueError:
             self.end : datetime = datetime.datetime.strptime(end, "%Y-%m-%d")
 
-        self.summary=event_dict['summary']
-
+        #self.summary=event_dict['summary']
+        self.summary = None
     def __repr__(self):
         return f"Event : {self.summary}, {self.start}, {self.end}"
     
